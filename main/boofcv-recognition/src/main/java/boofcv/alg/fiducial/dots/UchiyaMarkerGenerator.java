@@ -16,36 +16,23 @@
  * limitations under the License.
  */
 
-package boofcv.alg.feature.describe.llah;
+package boofcv.alg.fiducial.dots;
 
+import boofcv.alg.drawing.FiducialRenderEngine;
 import georegression.struct.point.Point2D_F64;
-import org.ddogleg.struct.FastQueue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Describes a document or marker which is described using {@link LlahFeature LLAH features}.
- *
  * @author Peter Abeles
  */
-public class LlahDocument {
+public class UchiyaMarkerGenerator {
 
-	/**
-	 * Which document this belongs to. Index in the document list.
-	 */
-	public int documentID;
+	// used to draw the fiducial
+	protected FiducialRenderEngine render;
 
-	/**
-	 * 2D locations of features in the document's plane
-	 */
-	public FastQueue<Point2D_F64> locations = new FastQueue<>(Point2D_F64::new);
-	/**
-	 * Description of features in the document
-	 */
-	public List<LlahFeature> features = new ArrayList<>();
 
-	public void addFeature( double x , double y ) {
-		locations.grow().set(x,y);
+	public void render( List<Point2D_F64> dots ) {
+
 	}
 }

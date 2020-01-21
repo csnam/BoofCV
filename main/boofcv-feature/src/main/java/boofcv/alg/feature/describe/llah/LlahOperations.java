@@ -19,6 +19,7 @@
 package boofcv.alg.feature.describe.llah;
 
 import boofcv.alg.nn.KdTreePoint2D_F64;
+import boofcv.struct.geo.PointIndex2D_F64;
 import georegression.struct.point.Point2D_F64;
 import lombok.Getter;
 import org.ddogleg.combinatorics.Combinations;
@@ -82,11 +83,11 @@ public class LlahOperations {
 	//========================== Internal working variables
 	final NearestNeighbor<Point2D_F64> nn = FactoryNearestNeighbor.kdtree(new KdTreePoint2D_F64());
 	private final NearestNeighbor.Search<Point2D_F64> search = nn.createSearch();
-	private final FastQueue<NnData<Point2D_F64>> resultsNN = new FastQueue(NnData.class, NnData::new);
+	private final FastQueue<NnData<Point2D_F64>> resultsNN = new FastQueue<>(NnData::new);
 	final List<Point2D_F64> neighbors = new ArrayList<>();
 	private final double[] angles;
 	private final QuickSort_F64 sorter = new QuickSort_F64();
-	private final FastQueue<Result> resultsStorage = new FastQueue<>(Result.class, Result::new);
+	private final FastQueue<Result> resultsStorage = new FastQueue<>(Result::new);
 
 	// Used to compute all the combinations of a set
 	private final Combinations<Point2D_F64> combinator = new Combinations<>();
@@ -344,6 +345,16 @@ public class LlahOperations {
 			pointHits.reset();
 		}
 
+		public void lookupMatches(FastQueue<PointIndex2D_F64> matches ) {
+			matches.reset();
+			for (int i = 0; i < pointMask.size; i++) {
+				if( pointMask.get(i) ) {
+					var p = document.locations.get(i);
+					matches.grow().set(p.x,p.y,i);
+				}
+			}
+		}
+
 		public int countMatches() {
 			int total = 0;
 			for (int i = 0; i < pointMask.size; i++) {
@@ -352,6 +363,7 @@ public class LlahOperations {
 			}
 			return total;
 		}
+
 		public int countHits() {
 			int total = 0;
 			for (int i = 0; i < pointMask.size; i++) {
