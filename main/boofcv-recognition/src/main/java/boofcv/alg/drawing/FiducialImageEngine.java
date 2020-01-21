@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2018, Peter Abeles. All Rights Reserved.
+ * Copyright (c) 2011-2020, Peter Abeles. All Rights Reserved.
  *
  * This file is part of BoofCV (http://boofcv.org).
  *
@@ -57,13 +57,37 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 	}
 
 	@Override
+	public void circle(double cx, double cy, double radius) {
+		int x0 = borderPixels+(int)Math.round(cx-radius);
+		int y0 = borderPixels+(int)Math.round(cy-radius);
+		int x1 = borderPixels+(int)Math.round(cx+radius)+1;
+		int y1 = borderPixels+(int)Math.round(cy+radius)+1;
+
+		// bound it inside the image
+		x0 = Math.max(0,x0);
+		y0 = Math.max(0,y0);
+		x1 = Math.min(gray.height,x1);
+		y1 = Math.min(gray.height,y1);
+
+		// Brute force circle filling algorithm
+		for (int y = y0; y < y1; y++) {
+			double dy = y-cy;
+			for (int x = x0; x < x1; x++) {
+				double dx = x-cx;
+				if( dx*dx + dy*dy <= radius)
+					gray.unsafe_set(x,y,black);
+			}
+		}
+	}
+
+	@Override
 	public void rectangle(double x0, double y0, double x1 , double y1) {
 		int pixelX0 = borderPixels+(int)(x0+0.5);
 		int pixelY0 = borderPixels+(int)(y0+0.5);
 		int pixelX1 = borderPixels+(int)(x1+0.5);
 		int pixelY1 = borderPixels+(int)(y1+0.5);
 
-		ImageMiscOps.fillRectangle(gray,0,pixelX0,pixelY0,pixelX1-pixelX0,pixelY1-pixelY0);
+		ImageMiscOps.fillRectangle(gray,black,pixelX0,pixelY0,pixelX1-pixelX0,pixelY1-pixelY0);
 	}
 
 	@Override
