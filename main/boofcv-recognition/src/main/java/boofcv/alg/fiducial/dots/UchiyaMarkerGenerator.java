@@ -19,20 +19,97 @@
 package boofcv.alg.fiducial.dots;
 
 import boofcv.alg.drawing.FiducialRenderEngine;
+import georegression.geometry.UtilPoint2D_F64;
 import georegression.struct.point.Point2D_F64;
+import georegression.struct.shapes.RectangleLength2D_F64;
+import lombok.Getter;
+import lombok.Setter;
+import org.ddogleg.struct.FastQueue;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 /**
+ * Renders Uchiya Markers
+ *
  * @author Peter Abeles
  */
 public class UchiyaMarkerGenerator {
 
 	// used to draw the fiducial
-	protected FiducialRenderEngine render;
+	@Getter protected FiducialRenderEngine render;
 
+	// Circle's radius. This will be in the same units as markerRegion
+	@Getter @Setter double radius;
 
+	// Region insid ethe document that the marker being rendered is specified to be inside of
+	@Getter protected final RectangleLength2D_F64 documentRegion = new RectangleLength2D_F64();
+
+	// dot locations after being transformed ot fit inside the region
+	@Getter FastQueue<Point2D_F64> dotsAdjusted = new FastQueue<>(Point2D_F64::new);
+
+	//----------------- workspace variables
+	private Point2D_F64 average = new Point2D_F64();
+
+	/**
+	 * Randomly generates a marker within the allowed region. Ensures tat there is sufficient spacing between
+	 * points
+	 */
+	public List<Point2D_F64> createRandomMarker(Random rand , int num , double regionWidth , double minDistance ) {
+		final var points = new ArrayList<Point2D_F64>();
+		final var work = new Point2D_F64();
+
+		double tol = minDistance*minDistance;
+
+		int iteration = 0;
+		while( iteration < num*100 && points.size() < num ) {
+			work.x = rand.nextDouble()*regionWidth;
+			work.y = rand.nextDouble()*regionWidth;
+
+			// See if there's a point in the list that's too close
+			boolean good = true;
+			for (int i = 0; i < points.size(); i++) {
+				if( points.get(i).distance2(work) < tol ) {
+					good = false;
+					break;
+				}
+			}
+
+			if( good ) {
+				points.add(work.copy());
+			}
+		}
+
+		return points;
+	}
+
+	/**
+	 * Renders the marker. Automatically scales of offsets to fit inside the document's coordinate system
+	 */
 	public void render( List<Point2D_F64> dots ) {
+		UtilPoint2D_F64.mean(dots, average);
+		double maxDistance = 0;
+		for ( var p : dots ) {
+			maxDistance = max(maxDistance, abs(p.x-average.x));
+			maxDistance = max(maxDistance, abs(p.y-average.y));
+		}
 
+		double regionCenterX = documentRegion.x0 + documentRegion.width/2;
+		double regionCenterY = documentRegion.y0 + documentRegion.height/2;
+
+		double scale = Math.min(documentRegion.width,documentRegion.height)/maxDistance;
+
+		render.init();
+		dotsAdjusted.reset();
+		for( var p : dots ) {
+			Point2D_F64 a = dotsAdjusted.grow();
+			a.x = (p.x - average.x)*scale + regionCenterX;
+			a.y = (p.y - average.y)*scale + regionCenterY;
+			render.circle(a.x,a.y,radius);
+		}
 	}
 }

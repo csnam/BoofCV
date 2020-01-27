@@ -27,6 +27,9 @@ import boofcv.struct.image.GrayU8;
  * @author Peter Abeles
  */
 public abstract class FiducialRenderEngine {
+	/**
+	 * Init needs to be called for each new fiducial.
+	 */
 	public abstract void init();
 
 	public void square(double x0 , double y0 , double width ) {

@@ -51,6 +51,14 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 		gray.reshape(width,width);
 	}
 
+	public void configure( int borderPixels , int markerWidth , int markerHeight ) {
+		this.borderPixels = borderPixels;
+
+		int width = markerWidth +2*borderPixels;
+		int height = markerHeight +2*borderPixels;
+		gray.reshape(width,height);
+	}
+
 	@Override
 	public void init() {
 		ImageMiscOps.fill(gray,white);
