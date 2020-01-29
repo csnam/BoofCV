@@ -59,14 +59,14 @@ public class UchiyaMarkerGenerator {
 	 * Randomly generates a marker within the allowed region. Ensures tat there is sufficient spacing between
 	 * points
 	 */
-	public List<Point2D_F64> createRandomMarker(Random rand , int num , double regionWidth , double minDistance ) {
+	public static List<Point2D_F64> createRandomMarker(Random rand , int num , double regionWidth , double minDistance ) {
 		final var points = new ArrayList<Point2D_F64>();
 		final var work = new Point2D_F64();
 
 		double tol = minDistance*minDistance;
 
-		int iteration = 0;
-		while( iteration < num*100 && points.size() < num ) {
+		int failedAttempts = 0;
+		while( failedAttempts < 100 && points.size() < num ) {
 			work.x = rand.nextDouble()*regionWidth;
 			work.y = rand.nextDouble()*regionWidth;
 
@@ -81,6 +81,8 @@ public class UchiyaMarkerGenerator {
 
 			if( good ) {
 				points.add(work.copy());
+			} else {
+				failedAttempts++;
 			}
 		}
 
@@ -98,10 +100,14 @@ public class UchiyaMarkerGenerator {
 			maxDistance = max(maxDistance, abs(p.y-average.y));
 		}
 
-		double regionCenterX = documentRegion.x0 + documentRegion.width/2;
-		double regionCenterY = documentRegion.y0 + documentRegion.height/2;
+		// need to subtract the radius so that it is rendered entirely inside
+		double drawWidth  = documentRegion.width  - radius*2;
+		double drawHeight = documentRegion.height - radius*2;
 
-		double scale = Math.min(documentRegion.width,documentRegion.height)/maxDistance;
+		double regionCenterX = documentRegion.x0 + drawWidth/2;
+		double regionCenterY = documentRegion.y0 + drawHeight/2;
+
+		double scale = Math.min(drawWidth, drawHeight)/(2.0*maxDistance);
 
 		render.init();
 		dotsAdjusted.reset();

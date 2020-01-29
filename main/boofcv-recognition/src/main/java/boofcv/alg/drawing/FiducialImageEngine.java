@@ -71,6 +71,10 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 		int x1 = borderPixels+(int)Math.round(cx+radius)+1;
 		int y1 = borderPixels+(int)Math.round(cy+radius)+1;
 
+		// border adjusted center
+		double bcx = borderPixels+cx;
+		double bcy = borderPixels+cy;
+
 		// bound it inside the image
 		x0 = Math.max(0,x0);
 		y0 = Math.max(0,y0);
@@ -79,9 +83,9 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 
 		// Brute force circle filling algorithm
 		for (int y = y0; y < y1; y++) {
-			double dy = y-cy;
+			double dy = y-bcy;
 			for (int x = x0; x < x1; x++) {
-				double dx = x-cx;
+				double dx = x-bcx;
 				if( dx*dx + dy*dy <= radius)
 					gray.unsafe_set(x,y,black);
 			}
