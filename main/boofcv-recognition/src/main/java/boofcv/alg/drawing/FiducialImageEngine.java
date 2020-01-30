@@ -82,11 +82,12 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 		y1 = Math.min(gray.height,y1);
 
 		// Brute force circle filling algorithm
+		double r2 = radius*radius;
 		for (int y = y0; y < y1; y++) {
 			double dy = y-bcy;
 			for (int x = x0; x < x1; x++) {
 				double dx = x-bcx;
-				if( dx*dx + dy*dy <= radius)
+				if( dx*dx + dy*dy <= r2)
 					gray.unsafe_set(x,y,black);
 			}
 		}

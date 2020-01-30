@@ -23,13 +23,11 @@ import boofcv.alg.feature.describe.llah.LlahHasher;
 import boofcv.alg.feature.describe.llah.LlahOperations;
 import boofcv.alg.shapes.ellipse.BinaryEllipseDetectorPixel;
 import boofcv.factory.filter.binary.FactoryThresholdBinary;
-import boofcv.gui.image.ShowImages;
-import boofcv.misc.BoofMiscOps;
 import boofcv.struct.image.GrayU8;
-import georegression.geometry.UtilPoint2D_F64;
 import georegression.struct.point.Point2D_F64;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -41,18 +39,33 @@ class TestTrackUchiyaMarkers {
 	int width = 100;
 	int height = 90;
 
+	List<List<Point2D_F64>> documents = new ArrayList<>();
+
+	public TestTrackUchiyaMarkers() {
+		for (int i = 0; i < 20; i++) {
+			documents.add( UchiyaMarkerGeneratorImage.createRandomMarker(rand,20,90,15));
+		}
+	}
+
 	@Test
 	void easy() {
-		List<Point2D_F64> dots = UtilPoint2D_F64.random(-2,2,20,rand);
+		List<Point2D_F64> dots = documents.get(2);
 
 		UchiyaMarkerGeneratorImage generator = new UchiyaMarkerGeneratorImage();
-		generator.configure(width,height,20);
-		generator.setRadius(5);
+		generator.configure(width,height,5);
+		generator.setRadius(4);
 
 		generator.render(dots);
 
-		ShowImages.showWindow(generator.getImage(),"Stuff");
-		BoofMiscOps.sleep(10000);
+		TrackUchiyaMarkers<GrayU8> tracker = createTracker();
+		for( var doc : documents ) {
+			tracker.llahOps.createDocument(doc);
+		}
+
+//		ShowImages.showWindow(generator.getImage(),"Stuff");
+//		BoofMiscOps.sleep(10000);
+
+		tracker.process(generator.getImage());
 	}
 
 	TrackUchiyaMarkers<GrayU8> createTracker() {

@@ -80,6 +80,12 @@ public class TrackUchiyaMarkers<T extends ImageBase<T>> {
 		// Detect new markers
 		llahOps.lookupDocuments(centers, foundDocs);
 
+		// TODO need way to set threshold from 0 to 1.0
+
+		System.out.println("Found documents "+foundDocs.size());
+		for( var r : foundDocs.values() ) {
+			System.out.println(r.document.documentID+" hits = "+r.countHits());
+		}
 
 		// see if there are any matches
 
