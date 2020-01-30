@@ -78,7 +78,7 @@ public class FiducialImageEngine extends FiducialRenderEngine {
 		// bound it inside the image
 		x0 = Math.max(0,x0);
 		y0 = Math.max(0,y0);
-		x1 = Math.min(gray.height,x1);
+		x1 = Math.min(gray.width ,x1);
 		y1 = Math.min(gray.height,y1);
 
 		// Brute force circle filling algorithm

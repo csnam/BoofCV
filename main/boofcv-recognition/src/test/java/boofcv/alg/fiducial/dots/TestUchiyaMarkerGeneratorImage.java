@@ -27,7 +27,6 @@ import georegression.struct.point.Point2D_F64;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +40,11 @@ class TestUchiyaMarkerGeneratorImage {
 	 */
 	@Test
 	void render() {
+		render(120, 120);
+		render(120, 80);
+	}
+
+	private void render(int width, int height) {
 		var alg = new UchiyaMarkerGeneratorImage();
 
 		// Create a set of points at known locations
@@ -51,15 +55,15 @@ class TestUchiyaMarkerGeneratorImage {
 		points.add( new Point2D_F64(-10,50));
 		points.add( new Point2D_F64(30,50));
 
-		int width = 120;
-
-		alg.configure(width,width,5);
+		alg.configure(width,height,5);
 		alg.setRadius(7);
 		alg.render(points);
 
 		GrayU8 image = alg.getImage();
 		assertEquals(width, image.width);
-		assertEquals(width, image.height);
+		assertEquals(height, image.height);
+
+		int length = Math.min(width,height);
 
 //		ShowImages.showWindow(image,"Tada");
 //		BoofMiscOps.sleep(10_000);
@@ -74,15 +78,20 @@ class TestUchiyaMarkerGeneratorImage {
 
 		assertEquals(points.size(),found.size());
 
-		found.sort(Comparator.comparingDouble((EllipseRotated_F64 a) -> a.center.y).thenComparingDouble(a -> a.center.x));
+		// sort it by angle
+		found.sort((a,b)->{
+			double angA = Math.atan2(a.center.y-height/2,a.center.x-width/2);
+			double angB = Math.atan2(b.center.y-height/2,b.center.x-width/2);
+			return Double.compare(angA,angB);
+		});
 
 		double dist01 = found.get(0).center.distance(found.get(1).center);
-		double dist12 = found.get(1).center.distance(found.get(3).center);
-		double dist23 = found.get(3).center.distance(found.get(2).center);
-		double dist30 = found.get(2).center.distance(found.get(0).center);
+		double dist12 = found.get(1).center.distance(found.get(2).center);
+		double dist23 = found.get(2).center.distance(found.get(3).center);
+		double dist30 = found.get(3).center.distance(found.get(0).center);
 
 		// should be spread out. width-2*border-2*radius
-		assertEquals(width-2*5-2*7,dist01,2);
+		assertEquals(length-2*5-2*7,dist01,2);
 
 		assertEquals(dist01, dist12, 2);
 		assertEquals(dist01, dist23, 2);

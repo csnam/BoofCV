@@ -37,7 +37,7 @@ import java.util.Random;
  * @author Peter Abeles
  */
 class TestTrackUchiyaMarkers {
-	Random rand = new Random(3245);
+	Random rand = new Random(38945);
 	int width = 100;
 	int height = 90;
 
@@ -52,7 +52,6 @@ class TestTrackUchiyaMarkers {
 		generator.render(dots);
 
 		ShowImages.showWindow(generator.getImage(),"Stuff");
-
 		BoofMiscOps.sleep(10000);
 	}
 

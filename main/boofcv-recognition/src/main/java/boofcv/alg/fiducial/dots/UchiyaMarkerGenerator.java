@@ -99,22 +99,25 @@ public class UchiyaMarkerGenerator {
 			maxDistance = max(maxDistance, abs(p.x-average.x));
 			maxDistance = max(maxDistance, abs(p.y-average.y));
 		}
+		if( maxDistance == 0.0 )
+			maxDistance = 1.0;
 
-		// need to subtract the radius so that it is rendered entirely inside
-		double drawWidth  = documentRegion.width  - radius*2;
-		double drawHeight = documentRegion.height - radius*2;
+		// The length of the square the circle's centers can appear inside of
+		double drawLength = Math.min(documentRegion.width,documentRegion.height)-2*radius;
 
-		double regionCenterX = documentRegion.x0 + drawWidth/2;
-		double regionCenterY = documentRegion.y0 + drawHeight/2;
+		// nFind the shift needed to put a point in the center of the draw region
+		double regionCenterX = documentRegion.width/2;
+		double regionCenterY = documentRegion.height/2;
 
-		double scale = Math.min(drawWidth, drawHeight)/(2.0*maxDistance);
+		// transform from points to paper coordinates
+		double point_to_pixel = drawLength/(2.0*maxDistance);
 
 		render.init();
 		dotsAdjusted.reset();
 		for( var p : dots ) {
 			Point2D_F64 a = dotsAdjusted.grow();
-			a.x = (p.x - average.x)*scale + regionCenterX;
-			a.y = (p.y - average.y)*scale + regionCenterY;
+			a.x = (p.x - average.x)*point_to_pixel + regionCenterX;
+			a.y = (p.y - average.y)*point_to_pixel + regionCenterY;
 			render.circle(a.x,a.y,radius);
 		}
 	}
