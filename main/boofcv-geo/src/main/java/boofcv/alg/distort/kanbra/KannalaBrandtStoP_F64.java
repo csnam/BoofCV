@@ -20,6 +20,7 @@ package boofcv.alg.distort.kanbra;
 
 import boofcv.struct.calib.CameraKannalaBrandt;
 import boofcv.struct.distort.Point3Transform2_F64;
+import georegression.geometry.UtilPoint3D_F64;
 import georegression.struct.point.Point2D_F64;
 
 /**
@@ -30,17 +31,45 @@ import georegression.struct.point.Point2D_F64;
  * @author Peter Abeles
  */
 public class KannalaBrandtStoP_F64 implements Point3Transform2_F64 {
-	public KannalaBrandtStoP_F64(CameraKannalaBrandt model ) {
+	protected final CameraKannalaBrandt model;
 
+	public KannalaBrandtStoP_F64( CameraKannalaBrandt model ) {
+		this.model = new CameraKannalaBrandt(model);
 	}
 
 	@Override
 	public void compute(double x, double y, double z, Point2D_F64 out) {
+		final double[] coefSymm = model.coefSymm;
+		final double[] coefRad = model.coefRad;
+		final double[] coefTan = model.coefTan;
 
+		// angle between incoming ray and principle axis
+		//    Principle Axis = (0,0,1)
+		//    Incoming Ray   = (x,y,z)
+		double theta = Math.acos(1.0/UtilPoint3D_F64.norm(x,y,z)); // uses dot product
+
+		// yaw angle on the image plane of the incoming ray
+		double phi = Math.atan2(y,x);
+
+		// compute symmetric projection function
+		double pow = theta;
+		double r = 0;
+		for (int i = 0; i < coefSymm.length; i++) {
+			r += coefSymm[i]*pow;
+			pow *= theta*theta;
+		}
+
+		// radial distortion
+
+		// tangential distortion
+
+		// put it all together to get normalized image coordinates
+
+		// convert into pixels
 	}
 
 	@Override
 	public Point3Transform2_F64 copyConcurrent() {
-		return null;
+		return this;
 	}
 }

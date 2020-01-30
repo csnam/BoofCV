@@ -22,7 +22,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * A camera model for pinhole, wide angle, and fisheye cameras. The full camera model from [1] has been implemented.
+ * A camera model for pinhole, wide angle, and fisheye cameras up to a FOV of 180 degrees. The full camera model
+ * from [1] has been implemented.
  *
  * <p>[1] Kannala, J., & Brandt, S. S. (2006). A generic camera model and calibration method for conventional,
  * wide-angle, and fish-eye lenses. IEEE transactions on pattern analysis and machine intelligence,
@@ -33,13 +34,13 @@ import lombok.Setter;
 public class CameraKannalaBrandt extends CameraPinhole {
 
 	/** Coeffients for radially symmetric model */
-	@Getter @Setter public double[] k;
+	@Getter @Setter public double[] coefSymm;
 
 	/** Coefficients for distortion terms in radial direction */
-	@Getter @Setter public double[] l;
+	@Getter @Setter public double[] coefRad;
 
 	/** Coefficients for distortion terms in tangential direction */
-	@Getter @Setter public double[] m;
+	@Getter @Setter public double[] coefTan;
 
 	/**
 	 * Constructor which allows the order of all distortion coefficients to be specified
@@ -49,9 +50,16 @@ public class CameraKannalaBrandt extends CameraPinhole {
 	 */
 	public CameraKannalaBrandt( int numRadSym, int numDistRad , int numDistTan )
 	{
-		k = new double[numRadSym];
-		l = new double[numDistRad];
-		m = new double[numDistTan];
+		coefSymm = new double[numRadSym];
+		coefRad = new double[numDistRad];
+		coefTan = new double[numDistTan];
+	}
+
+	/**
+	 * Copy constructor
+	 */
+	public CameraKannalaBrandt( CameraKannalaBrandt src ) {
+		set(src);
 	}
 
 	/**
@@ -63,17 +71,17 @@ public class CameraKannalaBrandt extends CameraPinhole {
 	}
 
 	public CameraKannalaBrandt fsetSymmetric( double... coefs ) {
-		this.k = coefs.clone();
+		this.coefSymm = coefs.clone();
 		return this;
 	}
 
 	public CameraKannalaBrandt fsetDistRadial( double... coefs ) {
-		this.l = coefs.clone();
+		this.coefRad = coefs.clone();
 		return this;
 	}
 
 	public CameraKannalaBrandt fsetDistTangent( double... coefs ) {
-		this.m = coefs.clone();
+		this.coefTan = coefs.clone();
 		return this;
 	}
 
@@ -82,15 +90,15 @@ public class CameraKannalaBrandt extends CameraPinhole {
 	 */
 	public boolean isSymmetricModel() {
 		boolean noRadial = true;
-		for (int i = 0; i < l.length; i++) {
-			if (l[i] != 0) {
+		for (int i = 0; i < coefRad.length; i++) {
+			if (coefRad[i] != 0) {
 				noRadial = false;
 				break;
 			}
 		}
 		boolean noTangential = true;
-		for (int i = 0; i < m.length; i++) {
-			if (m[i] != 0) {
+		for (int i = 0; i < coefTan.length; i++) {
+			if (coefTan[i] != 0) {
 				noTangential = false;
 				break;
 			}
@@ -101,22 +109,22 @@ public class CameraKannalaBrandt extends CameraPinhole {
 	public void set( CameraKannalaBrandt src ) {
 		super.set(src);
 
-		this.k = src.k.clone();
-		this.l = src.l.clone();
-		this.m = src.m.clone();
+		this.coefSymm = src.coefSymm.clone();
+		this.coefRad = src.coefRad.clone();
+		this.coefTan = src.coefTan.clone();
 	}
 
 	@Override
 	public <T extends CameraModel> T createLike() {
-		return (T)new CameraKannalaBrandt(k.length,l.length,m.length);
+		return (T)new CameraKannalaBrandt(coefSymm.length, coefRad.length, coefTan.length);
 	}
 
 	@Override
 	public void print() {
 		super.print();
-		printArray("symmetric",k);
-		printArray("radial",l);
-		printArray("tangential",m);
+		printArray("symmetric", coefSymm);
+		printArray("radial", coefRad);
+		printArray("tangential", coefTan);
 	}
 
 	private static void printArray( String name, double[] coefs ) {
